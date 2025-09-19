@@ -1,6 +1,4 @@
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 public class Main {
@@ -8,9 +6,10 @@ public class Main {
     public static final int amountThread = 1000;
 
     public static void main(String[] args) throws InterruptedException {
+        List<Thread> threads = new ArrayList<>();
 
         for (int i = 0; i < amountThread; i++) {
-            new Thread(() -> {
+            Thread thread = new Thread(() -> {
                 String myRoute = generateRoute("RLRFR", 100);
                 //  System.out.println(myRoute);
 
@@ -25,7 +24,9 @@ public class Main {
                     calculateFreqRoute(counterR);
                     sizeToFreq.notify();
                 }
-            }).start();
+            });
+            threads.add(thread);
+            thread.start();
         }
 
 
@@ -49,13 +50,15 @@ public class Main {
         Thread printThread = new Thread(logic);
         printThread.start();
 
-       Thread.sleep(1000); //ждем завершения всех потоков
+        for(Thread thread:threads){
+         thread.join();
+        } //ждем завершения всех потоков
 
         printThread.interrupt();   //Прерываем поток поиска максимума
         if (!sizeToFreq.isEmpty()) {
             for (Integer key : sizeToFreq.keySet()) {
                 int value = sizeToFreq.get(key);
-                System.out.println(key + " - " + value+ " раз");
+                System.out.println(key + " - " + value + " раз");
             }
         }
     }
